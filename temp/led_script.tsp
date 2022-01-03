@@ -1,8 +1,6 @@
-
-
 --[[
 	Name:	DCSweepVLinear(start, stop, numPoints, limitI, nplc)
-	
+
 	Description:
 		This function performs an autoranged DC linear voltage sweep.  It
 		demonstrates the simplest trigger model configuration to perform
@@ -20,7 +18,12 @@
 --]]
 function DCSweepVLinear(start, stop, numPoints, limitI, nplc)
 	reset()
-	print("V0001")
+    display.clear()
+	print("V0004")
+    -- Beep in excitement
+    beeper.beep(1, 600)
+
+
 	-- Configure the SMU
 	smua.reset()
 	smua.source.func					= smua.OUTPUT_DCVOLTS
@@ -33,6 +36,10 @@ function DCSweepVLinear(start, stop, numPoints, limitI, nplc)
 	smua.nvbuffer1.collecttimestamps	= 1
 	smua.nvbuffer2.clear()
 	smua.nvbuffer2.collecttimestamps	= 1
+
+    --DISPLAY settings
+    display.smua.measure.func = display.MEASURE_DCAMPS
+    display.screen = display.SMUA
 
 	-- Configure SMU Trigger Model for Sweep
 	smua.trigger.source.linearv(start, stop, numPoints)
@@ -58,12 +65,15 @@ function DCSweepVLinear(start, stop, numPoints, limitI, nplc)
 	smua.source.output					= smua.OUTPUT_OFF
 	
 	-- Print the data back to the Console in tabular format
+	--[[
 	print("Time\tVoltage\tCurrent")
 	for x=1,smua.nvbuffer1.n do
 		-- Voltage readings are in nvbuffer2.  Current readings are in nvbuffer1.
 		print(smua.nvbuffer1.timestamps[x], smua.nvbuffer2[x], smua.nvbuffer1[x])
 	end
+    --]]
+    print("smua.nvbuffer1.n",smua.nvbuffer1.n)
 end
 
 -- DCSweepVLinear(start, stop, numPoints, limitI, nplc)
---DCSweepVLinear(-12, 1, 50, 0.05, 5)
+-- DCSweepVLinear(-12, 1, 50, 0.05, 5)
