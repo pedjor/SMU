@@ -28,6 +28,7 @@ def countdown(tcount,sleep_interval=0.1):
 def load_TSP(inst,script):
     """Load an anonymous TSP script into the K2636 nonvolatile memory."""
     try:
+        #runs the script and this defines the functions
         inst.write('loadandrunscript')
         line_count = 1
         for line in open(script, mode='r'):
@@ -86,54 +87,39 @@ if (keith):
     keith.write("errorqueue.clear()")
     keith.write("*RST")
     keith.write("*CLS")
-    #while (1):
-    #    try:
-    #        keith.read()
-    #    except:
-    #        break
+    time.sleep(.1)
+
     print('I could open it and it\'s called:')
     print(keith.query('*IDN?'))
 
-#Clear, reset and clear errors
-
-
+#load and run the script to define functions
 load_TSP(keith,'led_script.tsp')
 
-
-
-keith.write('DCSweepVLinear(-12, 1, 50, 0.05, 5)')
+#execute the sweep by calling the function
+keith.write('DCSweepVLinear(-12, 1, 500, 0.05, 5)')
 print ('script version is ',keith.read())
-#the script prints the version of the code
+#the script prints the version of the code, read it back
 
 print('going to wait for completion')
 waitforcompletion()
 keith.write('*CLS')
-#print('OPC?=',keith.query('*OPC?'))
 
+npoints=keith.query('print("n= "..smua.buffer.getstats(smua.nvbuffer1).n)')
+print('Number of points from sweep=',npoints)
 
-#a=keith.query('printbuffer(1, 5, smua.nvbuffer1.sourcevalues)')
-
-xxx=keith.query('print("n= "..smua.buffer.getstats(smua.nvbuffer1).n)')
-print('xxx=',xxx)
-
-
-print('just trying')
-#vCurrent=keith.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)')
-#print (vCurrent)
-
-#vVoltage=keith.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)')
-#print (vVoltage)
-
-
+#'printbuffer' so that the instrument outputs
+#query to get them
+#arrange them in an array
 vCurrent = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 vVoltage = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer2.readings)').split(',')]
-#print('a='+a)
-print('vd:::::')
+
+print('**** data from sweep')
 print(vCurrent)
 print(vVoltage)
 
-
+#make a plot
 plotxy(vVoltage,vCurrent)
+
 exit(0)
 
 
