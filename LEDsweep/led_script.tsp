@@ -73,8 +73,10 @@ function DCSweepVLinear(start, stop, numPoints, limitI, nplc)
 		-- Voltage readings are in nvbuffer2.  Current readings are in nvbuffer1.
 		print(smua.nvbuffer1.timestamps[x], smua.nvbuffer2[x], smua.nvbuffer1[x])
 	end
-    --]]
+
     print("smua.nvbuffer1.n",smua.nvbuffer1.n)
+    --]]
+
 end
 
 -- DCSweepVLinear(start, stop, numPoints, limitI, nplc)

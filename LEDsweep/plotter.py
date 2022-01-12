@@ -6,10 +6,10 @@ def plotxy(x,y):
     try:
 #        ax1.plot(df1['Channel Voltage [V]'],
  #                    df1['Channel Current [A]'] / 1e-6, '.')
-        ax1.plot(x,y)
+        ax1.plot(x,y,'o-', color='red')
         ax1.set_title('I-V sweep')
         ax1.set_xlabel('Channel Voltage [V]')
-        ax1.set_ylabel('Channel Current [$\mu$A]')
+        ax1.set_ylabel('Channel Current [UA or $\mu$A]')
     except:
         pass
     plt.show()

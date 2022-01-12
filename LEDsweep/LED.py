@@ -1,15 +1,16 @@
 def waitforcompletion():
-    pos=0
-    dir=1
-    while (1):
+    pos = 0
+
+    while 1 :
         try:
-            Res=keith.query('*OPC?')
+            res=keith.query('*OPC?')
         except:
             print('\r',' '*pos,':-(','',end='')
             pos+=1
         else:
             print('\r',' :-) '*pos)
-            #print(Res)
+            if res!=1:
+                print("not getting the reply I expected")
             break
         time.sleep(0.1)
 
@@ -28,6 +29,7 @@ def countdown(tcount,sleep_interval=0.1):
 def load_TSP(inst,script):
     """Load an anonymous TSP script into the K2636 nonvolatile memory."""
     try:
+        # loads and runs the script and this defines the functions
         inst.write('loadandrunscript')
         line_count = 1
         for line in open(script, mode='r'):
@@ -51,89 +53,68 @@ def load_TSP(inst,script):
 #################################################################################
 
 
-print ("I'm Alive and sometimes I kick")
-
-
-"""
-stuff to interact vi visa
-"""
+print ("Starting the LED sweep program")
 
 
 import pyvisa
 import time
 from plotter import plotxy
-"""
-import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.style as style
-import time
-from serial import SerialException
-"""
 
+#The address of the instrument
 address='TCPIP0::192.168.120.50::inst0::INSTR'
-#
-rm = pyvisa.ResourceManager('@py')  # use py-visa backend
-#rm = pyvisa.ResourceManager()  # use py-visa backend
-#print(rm.list_resources())
-address='TCPIP::192.168.120.50::inst0::INSTR'
+
+res_man = pyvisa.ResourceManager('@py')  # use py-visa backend
+#res_man = pyvisa.ResourceManager()  # use System (e.g. NI-VISA) backend
+
 try:
-    keith = rm.open_resource(address)
+    keith = res_man.open_resource(address)
 except:
     print('something bad happened. Could not open ',)
     exit(1)
-if (keith):
+else:
     keith.write("localnode.prompts=0")
     keith.write("errorqueue.clear()")
     keith.write("*RST")
     keith.write("*CLS")
-    #while (1):
-    #    try:
-    #        keith.read()
-    #    except:
-    #        break
+    time.sleep(.1)
+
     print('I could open it and it\'s called:')
     print(keith.query('*IDN?'))
 
-#Clear, reset and clear errors
-
-
+#load and run the script to define functions
 load_TSP(keith,'led_script.tsp')
 
-
-
-keith.write('DCSweepVLinear(-12, 1, 50, 0.05, 5)')
+#execute the sweep by calling the function
+start_time = time.time()
+keith.write('DCSweepVLinear(-12, 1, 5, 0.05, 5)')
 print ('script version is ',keith.read())
-#the script prints the version of the code
+#the script prints the version of the code, read it back
 
 print('going to wait for completion')
 waitforcompletion()
 keith.write('*CLS')
-#print('OPC?=',keith.query('*OPC?'))
+end_time = time.time()
+print("started: " , time.strftime("%H:%M:%S",start_time))
+print("  ended: " , time.strftime("%H:%M:%S",end_time))
+print("total time:",end_time-start_time, " (" , time.strftime("%H%M%S",end_time-start_time), ")")
 
+npoints=keith.query('print(smua.buffer.getstats(smua.nvbuffer1).n)')
+print('Number of points from sweep:',npoints)
 
-#a=keith.query('printbuffer(1, 5, smua.nvbuffer1.sourcevalues)')
-
-xxx=keith.query('print("n= "..smua.buffer.getstats(smua.nvbuffer1).n)')
-print('xxx=',xxx)
-
-
-print('just trying')
-#vCurrent=keith.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)')
-#print (vCurrent)
-
-#vVoltage=keith.query('printbuffer(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)')
-#print (vVoltage)
-
-
+############## DATA
+#'printbuffer' so that the instrument outputs
+#query to get them
+#arrange them in an array
 vCurrent = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 vVoltage = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer2.readings)').split(',')]
-#print('a='+a)
-print('vd:::::')
+
+print('**** data from sweep')
 print(vCurrent)
 print(vVoltage)
 
-
+#make a plot
 plotxy(vVoltage,vCurrent)
+
 exit(0)
 
 
