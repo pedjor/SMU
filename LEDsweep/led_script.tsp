@@ -53,7 +53,9 @@ function DCSweepVLinear(start, stop, numPoints, limitI, nplc)
 	smua.trigger.count					= numPoints
 	smua.trigger.source.action			= smua.ENABLE
 	smua.measure.autozero 				= smua.AUTOZERO_ONCE
-	smua.measure.delay 					= 0.01
+	smua.measure.delay 					= -1
+	-- i guess -1 is auto
+	--smua.measure.delay 					= 0.01
 
 	smua.measure.lowrangei = 10e-3
 

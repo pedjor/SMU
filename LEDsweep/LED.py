@@ -8,9 +8,11 @@ def waitforcompletion():
             print('\r',' '*pos,':-(','',end='')
             pos+=1
         else:
-            print('\r',' :-) '*pos)
-            if res!=1:
-                print("not getting the reply I expected")
+            if res.find('1')==0:
+                print('\r',' :-) '*pos)
+            else:
+                print(Fore.RED+"not getting the reply I expected"+Style.RESET_ALL)
+                print("Result is:" + Back.LIGHTRED_EX, res , Style.RESET_ALL)
             break
         time.sleep(0.1)
 
@@ -52,13 +54,22 @@ def load_TSP(inst,script):
 #################################################################################
 #################################################################################
 
-
-print ("Starting the LED sweep program")
-
-
+####### IMPORTS
 import pyvisa
 import time
 from plotter import plotxy
+from colorama import Fore, Back, Style
+
+##############
+# MAIN
+##############
+
+
+print ("Starting the LED sweep program")
+#start_time = time.localtime()
+#print(Fore.LIGHTBLUE_EX + "start Time: " , time.strftime("%H:%M:%S",start_time) + Style.RESET_ALL)
+print(Fore.LIGHTBLUE_EX + "Start Time: " , time.asctime(), Style.RESET_ALL)
+
 
 #The address of the instrument
 address='TCPIP0::192.168.120.50::inst0::INSTR'
@@ -78,6 +89,7 @@ else:
     keith.write("*CLS")
     time.sleep(.1)
 
+
     print('I could open it and it\'s called:')
     print(keith.query('*IDN?'))
 
@@ -85,18 +97,21 @@ else:
 load_TSP(keith,'led_script.tsp')
 
 #execute the sweep by calling the function
-start_time = time.time()
-keith.write('DCSweepVLinear(-12, 1, 5, 0.05, 5)')
+
+#start stopwatch for the sweep
+stopwatchbegin=time.perf_counter()
+
+keith.write('DCSweepVLinear(-12, 1, 50, 0.05, 5)')
 print ('script version is ',keith.read())
 #the script prints the version of the code, read it back
 
 print('going to wait for completion')
 waitforcompletion()
 keith.write('*CLS')
-end_time = time.time()
-print("started: " , time.strftime("%H:%M:%S",start_time))
-print("  ended: " , time.strftime("%H:%M:%S",end_time))
-print("total time:",end_time-start_time, " (" , time.strftime("%H%M%S",end_time-start_time), ")")
+
+#start stopwatch for the sweep
+stopwatchend=time.perf_counter()
+print("total time: %. seconds",stopwatchend-stopwatchbegin)
 
 npoints=keith.query('print(smua.buffer.getstats(smua.nvbuffer1).n)')
 print('Number of points from sweep:',npoints)
@@ -108,9 +123,19 @@ print('Number of points from sweep:',npoints)
 vCurrent = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer1.readings)').split(',')]
 vVoltage = [float(x) for x in keith.query('printbuffer' +'(1, smua.nvbuffer1.n, smua.nvbuffer2.readings)').split(',')]
 
+
+keith.close()
+print('closed it')
+
+
 print('**** data from sweep')
 print(vCurrent)
 print(vVoltage)
+
+#end_time = time.localtime()
+#print(Fore.LIGHTBLUE_EX + "End Time: " , time.strftime("%H:%M:%S",end_time) + Style.RESET_ALL)
+print(Fore.LIGHTBLUE_EX + "End Time: " , time.asctime(), Style.RESET_ALL)
+
 
 #make a plot
 plotxy(vVoltage,vCurrent)
@@ -130,9 +155,6 @@ exit(0)
 
 
 
-
-keith.close()
-print('closed it')
 
 
 #close the device
